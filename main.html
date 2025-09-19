@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>С Днём Рождения, Дінназ!</title>
+<style>
+  :root{
+    --bg1:#ffd7e6; /* pastel pink */
+    --bg2:#d8c7ff; /* lavender */
+    --bg3:#d7f0ff; /* sky */
+    --glass: rgba(255,255,255,0.55);
+    --accent: rgba(255,255,255,0.9);
+    --text: #2b2b2b;
+    --muted: #6b6b6b;
+    --maxw: 920px;
+    --radius: 18px;
+  }
+
+  /* Page reset */
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    background: linear-gradient(120deg,var(--bg1),var(--bg2),var(--bg3));
+    background-size: 400% 400%;
+    animation: gradientShift 18s ease-in-out infinite;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px;
+  }
+
+  @keyframes gradientShift{
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
+
+  /* central card */
+  .card{
+    width:100%;
+    max-width:var(--maxw);
+    background: linear-gradient(180deg, rgba(255,255,255,0.58), rgba(255,255,255,0.45));
+    border-radius: calc(var(--radius) + 6px);
+    box-shadow: 0 10px 40px rgba(25,25,25,0.12);
+    padding:18px;
+    position:relative;
+    overflow:hidden;
+    backdrop-filter: blur(8px) saturate(120%);
+  }
+
+  /* soft decorative flowers (SVGs placed absolute) */
+  .flower{
+    position:absolute;
+    pointer-events:none;
+    opacity:0.9;
+    filter: drop-shadow(0 6px 18px rgba(0,0,0,0.08));
+  }
+  .flower.f1{left:-30px; top:-40px; width:180px; transform:rotate(-10deg); }
+  .flower.f2{right:-20px; bottom:-40px; width:140px; transform:rotate(18deg); opacity:0.85}
+
+  /* particle canvas sits behind content but inside card */
+  #particles{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+  }
+
+  .content{
+    position:relative;
+    z-index:2;
+    padding:22px;
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:18px;
+  }
+
+  /* HEADER / MAIN SCREEN */
+  .hero{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    align-items:center;
+    text-align:center;
+    padding:6px 10px 18px;
+  }
+
+  .headline{
+    font-size:clamp(28px,6vw,46px);
+    line-height:1.02;
+    font-weight:700;
+    letter-spacing:0.6px;
+    color:var(--text);
+    display:inline-block;
+    white-space:nowrap;
+    overflow:visible;
+  }
+
+  /* per-letter fade-in */
+  .headline span{
+    opacity:0;
+    display:inline-block;
+    transform: translateY(6px);
+    animation: letterIn .9s forwards;
+  }
+  @keyframes letterIn{
+    to{opacity:1; transform:none}
+  }
+
+  .letter-sub{
+    font-size:clamp(14px,2.6vw,18px);
+    color:var(--muted);
+    max-width:880px;
+  }
+
+  .message{
+    margin-top:8px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.12));
+    border-radius:12px;
+    padding:14px;
+    font-size:clamp(15px,2.6vw,18px);
+    color:var(--text);
+    line-height:1.45;
+    transform-origin:center;
+    animation: messageAppear 1s ease forwards;
+    opacity:0;
+  }
+  @keyframes messageAppear{ to{opacity:1; transform:none}}
+
+  /* slideshow */
+  .slideshow{
+    width:100%;
+    border-radius:14px;
+    overflow:hidden;
+    background:linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0.12));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    padding:14px;
+  }
+
+  .slides{
+    position:relative;
+    width:100%;
+    max-width:760px;
+    aspect-ratio:16/10;
+    overflow:hidden;
+    border-radius:12px;
+    box-shadow: 0 6px 30px rgba(20,20,20,0.08);
+    background: rgba(255,255,255,0.06);
+  }
+
+  .slide-track{
+    display:flex;
+    height:100%;
+    transition: transform 600ms cubic-bezier(.2,.9,.2,1);
+    will-change:transform;
+  }
+
+  .slide{
+    flex:0 0 100%;
+    height:100%;
+    position:relative;
+  }
+
+  .slide img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    user-select:none;
+  }
+
+  /* overlay for play hint */
+  .play-hint{
+    position:absolute;
+    left:12px;
+    bottom:12px;
+    background: rgba(0,0,0,0.28);
+    color:white;
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:13px;
+    backdrop-filter: blur(6px);
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+
+  /* controls */
+  .controls{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    justify-content:center;
+  }
+  .btn{
+    background:var(--accent);
+    border:none;
+    padding:8px 12px;
+    border-radius:999px;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+    transition: transform .18s ease, box-shadow .18s;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn:hover{transform:translateY(-3px)}
+
+  /* audio player area */
+  .player{
+    width:100%;
+    max-width:760px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px;
+    border-radius:12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.12));
+    box-shadow: 0 6px 18px rgba(10,10,10,0.06);
+  }
+  .player .info{
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+  .player img{
+    width:54px; height:54px; border-radius:10px; object-fit:cover; flex-shrink:0;
+  }
+  .player .meta{
+    font-size:14px;
+    color:var(--text);
+  }
+  .player .meta .title{font-weight:700}
+  .player .meta .artist{font-size:13px; color:var(--muted)}
+
+  /* "О тебе" block */
+  .about{
+    padding:14px;
+    border-radius:12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.36), rgba(255,255,255,0.08));
+  }
+  .about h3{
+    margin:0 0 8px 0;
+    font-size:18px;
+  }
+  .about p{
+    margin:0;
+    line-height:1.55;
+    color:var(--text);
+    font-size:15px;
+  }
+
+  .final{
+    margin-top:6px;
+    padding:22px;
+    border-radius:14px;
+    text-align:center;
+    font-weight:800;
+    font-size:clamp(26px,6vw,40px);
+    letter-spacing:0.4px;
+    color: #fff;
+    text-shadow: 0 6px 28px rgba(91, 25, 79, 0.25), 0 2px 8px rgba(91,25,79,0.14);
+    position:relative;
+    overflow:visible;
+  }
+  .final::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background: radial-gradient(closest-side, rgba(255,255,255,0.12), transparent 40%);
+    mix-blend-mode: overlay;
+    pointer-events:none;
+  }
+
+  /* small interests row */
+  .interests{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    align-items:center;
+    color:var(--muted);
+    font-size:13px;
+    padding-top:8px;
+  }
+  .interest{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    opacity:0.95;
+  }
+  .icon{
+    width:18px; height:18px; display:inline-block;
+  }
+
+  /* responsive */
+  @media (min-width:820px){
+    .content{padding:28px}
+    .hero{align-items:flex-start; text-align:left}
+  }
+</style>
+</head>
+<body>
+  <div class="card" role="main" aria-labelledby="main-title">
+    <!-- decorative flowers (inline SVGs) -->
+    <svg class="flower f1" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#ffd7e6"/><stop offset="1" stop-color="#ffd0ff"/></linearGradient></defs>
+      <g transform="translate(100 100)">
+        <path d="M0,-48 C12,-42 28,-38 36,-24 C44,-10 38,8 26,18 C14,28 -4,32 -18,28 C-32,24 -44,14 -48,0 C-52,-14 -46,-32 -34,-40 C-22,-48 -8,-54 6,-52 Z" fill="url(#g1)"/>
+        <circle r="8" fill="#fff6"/>
+      </g>
+    </svg>
+
+    <svg class="flower f2" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0" stop-color="#d7f0ff"/><stop offset="1" stop-color="#e7d9ff"/></linearGradient></defs>
+      <g transform="translate(70 70)">
+        <path d="M0,-36 C10,-32 22,-28 26,-16 C30,-4 24,6 14,14 C4,22 -8,24 -20,18 C-32,12 -42,2 -44,-10 C-46,-24 -38,-34 -28,-38 C-18,-42 -8,-44 2,-42 Z" fill="url(#g2)"/>
+      </g>
+    </svg>
+
+    <canvas id="particles" aria-hidden="true"></canvas>
+
+    <div class="content">
+      <header class="hero">
+        <h1 id="main-title" class="headline" aria-label="С Днём Рождения, Дінназ!"></h1>
+        <div class="letter-sub">Для тебя — маленькое письмо и большое сердце.</div>
+
+        <article id="personal-message" class="message" aria-live="polite">
+          <!-- letter text added by JS (animated) -->
+        </article>
+      </header>
+
+      <section class="slideshow" aria-label="Слайд-шоу с фотографиями">
+        <div class="slides" id="slideshow">
+          <div class="slide-track" id="track">
+            <!-- slides (replace src with actual images named photo1.jpg etc.) -->
+            <div class="slide" data-audio="music/1.mp3" data-title="Мелодия первый танец" data-artist="—">
+              <img src="photo/1.jpg" alt="Фото Дінназ 1" draggable="false">
+            </div>
+            <div class="slide" data-audio="music/2.mp3" data-title="Нежная песня" data-artist="—">
+              <img src="photo/2.jpg" alt="Фото Дінназ 2" draggable="false">
+            </div>
+            <div class="slide" data-audio="music/3.mp3" data-title="Сердечная мелодия" data-artist="—">
+              <img src="photo/3.jpg" alt="Фото Дінназ 3" draggable="false">
+            </div>
+          </div>
+          <div class="play-hint" id="playHint">Нажмите на фото, чтобы сменить трек ▶</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+          <div class="controls" aria-hidden="false">
+            <button class="btn" id="prevBtn" aria-label="Предыдущее фото">◀</button>
+            <button class="btn" id="nextBtn" aria-label="Следующее фото">▶</button>
+          </div>
+
+          <div class="player" aria-label="Музыкальный плеер">
+            <div class="info">
+              <img id="coverThumb" src="assets/photo/1.jpg" alt="Обложка трека" onerror="this.style.display='none'">
+              <div class="meta">
+                <div class="title" id="trackTitle">—</div>
+                <div class="artist" id="trackArtist">—</div>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:10px;">
+              <button class="btn" id="playPauseBtn" aria-label="Воспроизвести">Play</button>
+              <input id="seek" type="range" min="0" max="100" value="0" style="width:160px;">
+            </div>
+            <audio id="audio" preload="metadata"></audio>
+          </div>
+        </div>
+      </section>
+
+      <section class="about" aria-label="О тебе">
+        <h3>О тебе</h3>
+        <p id="aboutText">
+          Дінназ — будущая кардиологиня: добрая, внимательная и невероятно целеустремлённая. Ты учишься на 5-м курсе медицинского университета, и в твоих глазах уже видно теплое сострадание, которое станет точкой опоры для многих. Ты умна, терпелива и храбра — и каждый маленький шаг на пути к мечте делает мир вокруг чуть светлее. Пусть сердце твоё всегда бьётся в такт мечтам — и пусть рядом будут люди, которые ценят и любят тебя.
+        </p>
+      </section>
+
+      <section class="final" aria-label="Финальная надпись">
+        Ты делаешь мир лучше 💖
+      </section>
+
+      <div class="interests" aria-hidden="false">
+        <div class="interest"><svg class="icon" viewBox="0 0 24 24"><path d="M12 21s-7-4.9-9-9.5C1.8 8.2 5.1 4 9.5 4 12 4 12 6 12 6s0-2 2.5-2c4.4 0 7.7 4.2 6.5 7.5-2 4.6-9 9.5-9 9.5z" fill="rgba(0,0,0,0.12)"/></svg><span>K-pop</span></div>
+        <div class="interest"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3" fill="rgba(0,0,0,0.12)"/><path d="M6 20c2-4 10-4 14 0" fill="rgba(0,0,0,0.06)"/></svg><span>Anime</span></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* headline letters (typewriter-like appearance) */
+const headlineText = "С Днём Рождения, Дінназ!";
+const headlineEl = document.querySelector('.headline');
+headlineEl.innerHTML = '';
+[...headlineText].forEach((ch,i)=>{
+  const sp = document.createElement('span');
+  sp.textContent = ch;
+  sp.style.animationDelay = (i*0.06) + 's';
+  headlineEl.appendChild(sp);
+});
+
+/* personal letter typed gently */
+const letter = `Дорогая Дінназ,\n\nВ этот день я хочу, чтобы ты почувствовала, насколько ты ценна. Твоя доброта согревает, твоя решимость вдохновляет, а мечта стать кардиологом — это не просто профессия, а дар помогать сердцам биться сильнее. Пусть каждый экзамен и каждое ночное дежурство приближают тебя к мечте. Ты особенная. Ты любима.\n\nС любовью и верой в тебя.`;
+const msgEl = document.getElementById('personal-message');
+let li=0;
+function typeLetter(){
+  if(li <= letter.length){
+    msgEl.innerHTML = letter.slice(0, li).replace(/\n/g, '<br>');
+    li++;
+    setTimeout(typeLetter, 22 + (Math.random()*30));
+  }
+}
+setTimeout(typeLetter, 700);
+
+/* particles: canvas gentle floating sparkles */
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let w,h,particles=[];
+function resize(){
+  w = canvas.width = canvas.clientWidth;
+  h = canvas.height = canvas.clientHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+function rand(min,max){return Math.random()*(max-min)+min}
+function initParticles(n=28){
+  particles=[];
+  for(let i=0;i<n;i++){
+    particles.push({
+      x: rand(0,w),
+      y: rand(0,h),
+      vx: rand(-0.2,0.6),
+      vy: rand(-0.1,0.6),
+      r: rand(0.8,3.6),
+      alpha: rand(0.14,0.9),
+      hue: rand(300,350)
+    });
+  }
+}
+initParticles();
+
+function draw(){
+  ctx.clearRect(0,0,w,h);
+  for(const p of particles){
+    p.x += p.vx;
+    p.y += p.vy;
+    if(p.x > w+30) p.x = -30;
+    if(p.x < -30) p.x = w+30;
+    if(p.y > h+30) p.y = -30;
+    if(p.y < -30) p.y = h+30;
+
+    const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*6);
+    g.addColorStop(0, `hsla(${p.hue},80%,88%,${p.alpha})`);
+    g.addColorStop(1, `hsla(${p.hue},80%,88%,0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r*4,0,Math.PI*2);
+    ctx.fill();
+  }
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+/* slideshow logic */
+const track = document.getElementById('track');
+const slides = Array.from(document.querySelectorAll('.slide'));
+let idx = 0;
+let autoPlay = true;
+let autoTimer = null;
+const audio = document.getElementById('audio');
+const playPauseBtn = document.getElementById('playPauseBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const seek = document.getElementById('seek');
+const coverThumb = document.getElementById('coverThumb');
+const trackTitle = document.getElementById('trackTitle');
+const trackArtist = document.getElementById('trackArtist');
+
+function updateSlide(animate=true){
+  const percent = -idx*100;
+  if(!animate) track.style.transition = 'none'; else track.style.transition = '';
+  track.style.transform = `translateX(${percent}%)`;
+  const cur = slides[idx];
+  const audioSrc = cur.dataset.audio || '';
+  audio.src = audioSrc;
+  coverThumb.src = cur.querySelector('img').src;
+  trackTitle.textContent = cur.dataset.title || '—';
+  trackArtist.textContent = cur.dataset.artist || '—';
+  if(playingBefore) audio.play().catch(()=>{/* autoplay might be blocked */});
+  // small hint fade
+  document.getElementById('playHint').style.opacity = '0.6';
+  setTimeout(()=>document.getElementById('playHint').style.opacity='0.0',1200);
+}
+
+/* autoplay */
+let playingBefore = false;
+function startAuto(){
+  if(autoTimer) clearInterval(autoTimer);
+  autoTimer = setInterval(()=>{ idx = (idx+1) % slides.length; updateSlide(); }, 5000);
+}
+function stopAuto(){ if(autoTimer) clearInterval(autoTimer); autoTimer = null; }
+startAuto();
+
+prevBtn.addEventListener('click', ()=>{
+  idx = (idx-1+slides.length)%slides.length;
+  updateSlide();
+  stopAuto();
+});
+nextBtn.addEventListener('click', ()=>{
+  idx = (idx+1)%slides.length;
+  updateSlide();
+  stopAuto();
+});
+
+/* clicking image -> change to that slide + play music */
+slides.forEach((s,i)=>{
+  s.addEventListener('click', ()=>{
+    idx = i;
+    updateSlide();
+    audio.play().catch(()=>{/* maybe not allowed */});
+    autoPlay = false; stopAuto();
+  });
+});
+
+/* audio controls */
+playPauseBtn.addEventListener('click', ()=>{
+  if(audio.paused){
+    audio.play().catch(()=>{/* denied */});
+  } else audio.pause();
+});
+audio.addEventListener('play', ()=> playPauseBtn.textContent = 'Pause');
+audio.addEventListener('pause', ()=> playPauseBtn.textContent = 'Play');
+audio.addEventListener('timeupdate', ()=>{
+  if(audio.duration) seek.value = Math.floor((audio.currentTime / audio.duration)*100);
+});
+seek.addEventListener('input', ()=>{
+  if(audio.duration) audio.currentTime = (seek.value/100) * audio.duration;
+});
+
+/* maintain play state when slide changes */
+audio.addEventListener('playing', ()=>{ playingBefore = true; });
+audio.addEventListener('pause', ()=>{ playingBefore = false; });
+
+/* keyboard navigation */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'ArrowLeft') prevBtn.click();
+  if(e.key === 'ArrowRight') nextBtn.click();
+});
+
+/* swipe support */
+let startX=null, startY=null;
+const slideshowEl = document.getElementById('slideshow');
+slideshowEl.addEventListener('touchstart', (e)=>{
+  const t = e.touches[0];
+  startX = t.clientX; startY = t.clientY;
+  stopAuto();
+});
+slideshowEl.addEventListener('touchend', (e)=>{
+  if(startX === null) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - startX;
+  const dy = t.clientY - startY;
+  if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30){
+    if(dx < 0) nextBtn.click(); else prevBtn.click();
+  }
+  startX = null;
+  startY = null;
+});
+
+/* ensure images don't stretch on missing files: graceful fallback */
+document.querySelectorAll('.slide img').forEach(img=>{
+  img.addEventListener('error', ()=> {
+    img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"><rect width="100%" height="100%" fill="#f7e8f2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#c79" font-size="28">Здесь добавьте фото</text></svg>`
+    );
+  });
+});
+
+/* initial set up */
+updateSlide(false);
+
+/* small decorative shimmer on final text */
+const final = document.querySelector('.final');
+final.style.background = 'linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.18))';
+final.animate([{filter:'brightness(1)'},{filter:'brightness(1.12)'}], {duration:2400, iterations:Infinity, direction:'alternate'});
+
+/* gentle resize update for particles on layout change */
+new ResizeObserver(()=>{ resize(); initParticles(32); }).observe(document.querySelector('.card'));
+</script>
+</body>
+</html>
